@@ -3,11 +3,7 @@ from rest_framework import status
 from rest_framework.response import Response
 from rest_framework.decorators import api_view
 from academics.models import Course
-from academics.serializers import CourseSerializer,UpdateCourseSerializer
-
-
-
-
+from academics.serializers import CourseSerializer, UpdateCourseSerializer, GetCourseSerializer, DeleteCourseSerializer
 
 
 # Create your views here.
@@ -51,24 +47,46 @@ def update_course(request):
         logger.error(f"Error updating Course {str(e)}")
         return Response({"message": "Error updating Course"}, status=status.HTTP_400_BAD_REQUEST)
 
-# @api_view(['GET'])
-# def get_course(request):
-#     try:
-#         serializer = GetCourseSerializer(data=request.query_params)
-#         serializer.is_valid(raise_exception=True)
-#
-#         code = serializer.validated_data['code']
-#
-#         if not Course.objects.filter(code=code).exists():
-#             logger.error(f"Course {code} does not exist")
-#             return Response({"message": "Course with this code does not exist"}, status=status.HTTP_404_NOT_FOUND)
-#
-#
-#         courses = Course.objects.get(code=code)
-#         serializer = CourseSerializer(courses)
-#         logger.info(f"Course {code} retrieved")
-#         return Response(serializer.data, status=status.HTTP_200_OK)
-#     except Exception as e:
-#         logger.error(f"Error retrieving Course {str(e)}")
-#         return Response({"message": "Error retrieving Course"}, status=status.HTTP_400_BAD_REQUEST)
-#
+@api_view(['GET'])
+def get_course(request):
+    try:
+        serializer = GetCourseSerializer(data=request.query_params)
+        serializer.is_valid(raise_exception=True)
+
+        code = serializer.validated_data['code']
+
+        if not Course.objects.filter(code=code).exists():
+            logger.error(f"Course {code} does not exist")
+            return Response({"message": "Course with this code does not exist"}, status=status.HTTP_404_NOT_FOUND)
+
+
+        courses = Course.objects.get(code=code)
+        serializer = CourseSerializer(courses)
+        logger.info(f"Course {code} retrieved")
+        return Response(serializer.data, status=status.HTTP_200_OK)
+    except Exception as e:
+        logger.error(f"Error retrieving Course {str(e)}")
+        return Response({"message": "Error retrieving Course"}, status=status.HTTP_400_BAD_REQUEST)
+
+
+@api_view(['DELETE'])
+def delete_course(request):
+    try:
+        serializer = DeleteCourseSerializer(data=request.query_params)
+        serializer.is_valid(raise_exception=True)
+        code = serializer.validated_data['code']
+
+        if not Course.objects.filter(code=code).exists():
+            logger.error(f"Course {code} does not exist")
+            return Response({"message": "Course with this code does not exist"}, status=status.HTTP_404_NOT_FOUND)
+
+        Course.objects.filter(code=code).update(is_active=False)
+        courses=Course.objects.get(code=code)
+        serializers=CourseSerializer(courses)
+
+        logger.info(f"Course {code} deleted")
+        return Response({"message": f"Course {serializers.data} has been successfully deleted"}, status=status.HTTP_200_OK)
+    except Exception as e:
+        logger.error(f"Error deleting Course {str(e)}")
+        return Response({"message": "Error deleting Course"}, status=status.HTTP_400_BAD_REQUEST)
+

@@ -3,10 +3,10 @@ from loguru import logger
 from rest_framework.response import Response
 from rest_framework import status
 
-from core.models import Department
-from core.serializers import DepartmentSerializer, UpdateDepartmentSerializer, GetDepartmentSerializer, \
-    DeleteDepartmentSerializer
+from core.models import Department,User
+from core.serializers import *
 from rest_framework.decorators import api_view
+
 
 
 
@@ -101,4 +101,92 @@ def delete_department(request):
     except Exception as e:
         logger.error(f"Error deleting department {str(e)}")
         return Response({"message":"error deleting department"}, status=status.HTTP_400_BAD_REQUEST)
+
+@api_view(['POST'])
+def create_user(request):
+    try:
+        serializer = CreateUserSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        username = serializer.validated_data['username']
+        email=serializer.validated_data['email']
+
+
+        if User.objects.filter(username=username).exists():
+            logger.error(f"User with username {username} already exists")
+            return Response({"message":"user with username already exists"}, status=status.HTTP_400_BAD_REQUEST)
+
+
+        User.objects.create(**serializer.validated_data)
+        logger.info(f"user with username {username}  and {email} created")
+        return Response(serializer.data, status=status.HTTP_201_CREATED)
+
+    except Exception as e:
+        logger.error(f"Error creating user {str(e)}")
+        return Response({"message":"error creating user"}, status=status.HTTP_400_BAD_REQUEST)
+
+@api_view(['PUT','PATCH'])
+def update_user(request):
+    try:
+        serializer=CreateUserSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        username = serializer.validated_data['username']
+
+        if not User.objects.filter(username=username).exists():
+            logger.error(f"User with username {username} does not exist")
+            return Response({"message":"user with username does not exist"}, status=status.HTTP_404_NOT_FOUND)
+
+
+
+        User.objects.filter(username=username).update(**serializer.validated_data)
+        logger.info(f"user with username {username} updated")
+        return Response(serializer.data, status=status.HTTP_200_OK)
+
+    except Exception as e:
+        logger.error(f"Error updating user {str(e)}")
+        return Response({"message":"error updating user"}, status=status.HTTP_400_BAD_REQUEST)
+
+
+
+@api_view(['GET'])
+def get_user(request):
+    try:
+        serializer = GetUserSerializer(data=request.query_params)
+        serializer.is_valid(raise_exception=True)
+        username = serializer.validated_data['username']
+
+        if not User.objects.filter(username=username).exists():
+            logger.error(f"User with username {username} does not exist")
+            return Response({"message":"user with username does not exist"}, status=status.HTTP_404_NOT_FOUND)
+
+
+
+        user=User.objects.get(username=username)
+        serializers=CreateUserSerializer(user)
+
+        return Response(serializers.data, status=status.HTTP_200_OK)
+    except Exception as e:
+        logger.error(f"Error getting user {str(e)}")
+        return Response({"message":"error getting user"}, status=status.HTTP_400_BAD_REQUEST)
+
+@api_view(['DELETE'])
+def delete_user(request):
+    try:
+        serializer=DeleteUserSerializer(data=request.query_params)
+        serializer.is_valid(raise_exception=True)
+        username = serializer.validated_data['username']
+
+        if not User.objects.filter(username=username).exists():
+            logger.error(f"User with username {username} does not exist")
+            return Response({"message":"user with username does not exist"}, status=status.HTTP_404_NOT_FOUND)
+
+
+        User.objects.filter(username=username).update(is_active=False)
+
+        logger.info(f"user with username {username} deleted")
+        return Response({"message":f"user with {username} has been deleted"}, status=status.HTTP_200_OK)
+
+    except Exception as e:
+        logger.error(f"Error deleting user {str(e)}")
+        return Response({"message":"error deleting user"}, status=status.HTTP_400_BAD_REQUEST)
+
 
