@@ -13,19 +13,12 @@ class Student(models.Model):
         ("withdrawn","Withdrawn"),
     ]
 
-    DESIGNATION_CHOICES = [
-        ("lecturer_i","Lecturer I"),
-        ("lecturer_ii","Lecturer II"),
-        ("sr_lecturer","Senior Lecturer"),
-        ("professor","Professor"),
-        ("hod", "Head of Department"),
-    ]
 
     level = models.CharField(choices=LEVEL_CHOICES, max_length=3)
     status=models.CharField(choices=STUDENT_STATUS_CHOICES, max_length=20,default="active")
-    matric_number=models.CharField(max_length=20,unique=True,default=generate_matric_number)
+    matric_number=models.CharField(max_length=20,unique=True,default=generate_matric_number,primary_key=True)
     enrolled_at=models.DateTimeField(auto_now_add=True)
-    user=models.OneToOneField(User,on_delete=models.CASCADE,related_name="student", limit_choices_to={"role": ROLE_STUDENT})
+    user=models.OneToOneField(User,on_delete=models.CASCADE,related_name="student_profile", limit_choices_to={"role": ROLE_STUDENT})
     department=models.ForeignKey(Department,on_delete=models.PROTECT,related_name="students")
     updated_at=models.DateTimeField(auto_now=True)
     entry_year=models.PositiveIntegerField()
@@ -59,9 +52,18 @@ class Student(models.Model):
 
 
 class Staff(models.Model):
+    DESIGNATION_CHOICES = [
+        ("lecturer_i", "Lecturer I"),
+        ("lecturer_ii", "Lecturer II"),
+        ("sr_lecturer", "Senior Lecturer"),
+        ("professor", "Professor"),
+        ("hod", "Head of Department"),
+    ]
+
+
     user=models.OneToOneField(User,on_delete=models.PROTECT)
     department=models.ForeignKey(Department,on_delete=models.PROTECT)
-    designation=models.CharField(max_length=55,blank=False,null=False)
+    designation=models.CharField(choices=DESIGNATION_CHOICES,default="lecturer_i",max_length=55,blank=False,null=False)
     created_at=models.DateTimeField(auto_now_add=True)
     updated_at=models.DateTimeField(auto_now=True)
 

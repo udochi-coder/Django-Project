@@ -1,9 +1,41 @@
-from django.contrib.auth.base_user import AbstractBaseUser
+from django.contrib.auth.base_user import AbstractBaseUser, BaseUserManager
+from django.contrib.auth.models import UserManager, PermissionsMixin
 from django.db import models
-from core.constants import ROLE_CHOICES
+from core.constants import ROLE_CHOICES, ROLE_ADMIN
 
 
-class User(AbstractBaseUser):
+class UserManager(BaseUserManager):
+
+    def get_by_natural_key(self, email):
+        return self.get(email=email)
+
+
+    def create_user(self, email,username, password=None, **extra_fields):
+        if not email:
+            raise ValueError("Email is required")
+        email = self.normalize_email(email)
+        user = self.model(email=email, username=username, **extra_fields)
+        user.set_password(password)
+        user.save(using=self._db)
+        return user
+
+
+    def create_superuser(self, email, username, password=None, **extra_fields):
+        extra_fields.setdefault("is_staff", True)
+        extra_fields.setdefault("is_superuser", True)
+        extra_fields.setdefault("role", ROLE_ADMIN)
+        return self.create_user(email, username, password, **extra_fields)
+
+
+
+
+
+
+
+
+
+class User(AbstractBaseUser,PermissionsMixin):
+    objects = UserManager()
 
     first_name = models.CharField(max_length=100)
     last_name = models.CharField(max_length=100)
@@ -11,6 +43,7 @@ class User(AbstractBaseUser):
     username = models.CharField(max_length=150, unique=True)
     is_active = models.BooleanField(default=True)
     is_staff = models.BooleanField(default=False)
+
     role = models.CharField(
         max_length=20,
         choices=ROLE_CHOICES,
@@ -33,13 +66,13 @@ class User(AbstractBaseUser):
 
     @property
     def is_admin(self):
-        return self.role == self.ROLE.ADMIN
+        return self.role == ROLE_ADMIN
 
 
 class Department(models.Model):
 
     name = models.CharField(max_length=200, unique=True)
-    code = models.CharField(max_length=20, unique=True)
+    department_code = models.CharField(max_length=20, unique=True,primary_key=True)
     description = models.TextField(blank=True)
     is_active = models.BooleanField(default=True)
     created_at = models.DateTimeField(auto_now_add=True)
@@ -50,4 +83,4 @@ class Department(models.Model):
         ordering = ["name"]
 
     def __str__(self):
-        return f"{self.name} {self.code}"
+        return f"{self.name} {self.department_code}"
