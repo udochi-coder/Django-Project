@@ -1,0 +1,40 @@
+services:
+  - type: web
+    name: resultportal-api
+    runtime: docker
+    dockerfilePath: ./Dockerfile
+    healthCheckPath: /swagger/
+    envVars:
+      - key: SECRET_KEY
+        generateValue: true
+      - key: DEBUG
+        value: "False"
+      - key: ALLOWED_HOSTS
+        sync: false
+      - key: CORS_ALLOWED_ORIGINS
+        sync: false
+      - key: DB_NAME
+        fromDatabase:
+          name: resultportal-db
+          property: database
+      - key: DB_USER
+        fromDatabase:
+          name: resultportal-db
+          property: user
+      - key: DB_PASSWORD
+        fromDatabase:
+          name: resultportal-db
+          property: password
+      - key: DB_HOST
+        fromDatabase:
+          name: resultportal-db
+          property: host
+      - key: DB_PORT
+        fromDatabase:
+          name: resultportal-db
+          property: port
+
+databases:
+  - name: resultportal-db
+    databaseName: resultportal
+    user: resultportal

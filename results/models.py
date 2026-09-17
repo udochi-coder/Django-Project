@@ -19,6 +19,7 @@ class Result(models.Model):
 
 
 
+
     def __str__(self):
         return(
             f"{self.registration.student.matric_number} |"

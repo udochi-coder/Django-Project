@@ -11,7 +11,7 @@ class StudentAdmin(admin.ModelAdmin):
 
 @admin.register(Staff)
 class StaffAdmin(admin.ModelAdmin):
-    list_display = ("user","department", "designation")
+    list_display = ("user","department", "designation"  )
     search_fields = ("user__email", "designation")
 
 
