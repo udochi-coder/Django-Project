@@ -1,0 +1,74 @@
+version: '3.8'
+
+services:
+  db:
+    image: postgres:16-alpine
+    container_name: resultportal_db
+    environment:
+      POSTGRES_DB: ${DB_NAME:-result-portal-db}
+      POSTGRES_USER: ${DB_USER:-postgres}
+      POSTGRES_PASSWORD: ${DB_PASSWORD:-postgres}
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    ports:
+      - "5433:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - resultportal_network
+
+  web:
+    build: .
+    container_name: resultportal_web
+    env_file:
+      - .env
+    environment:
+      - DB_HOST=db
+      - DB_PORT=5432
+    depends_on:
+      db:
+        condition: service_healthy
+    volumes:
+      - staticfiles:/app/staticfiles
+      - mediafiles:/app/mediafiles
+    command: >
+      sh -c "
+        echo 'Waiting for database...' &&
+        python manage.py migrate --noinput &&
+        echo 'Running migrations...' &&
+        python manage.py collectstatic --noinput &&
+        echo 'Collecting static files...' &&
+        gunicorn ResultPortal.wsgi:application --bind 0.0.0.0:8000 --workers 3 --timeout 60
+      "
+    networks:
+      - resultportal_network
+
+  nginx:
+    image: nginx:1.27-alpine
+    container_name: resultportal_nginx
+    ports:
+      - "8080:80"
+    depends_on:
+      - web
+    volumes:
+      - ./docker/nginx/default.conf:/etc/nginx/conf.d/default.conf:ro
+      - staticfiles:/static:ro
+      - mediafiles:/media:ro
+    networks:
+      - resultportal_network
+
+volumes:
+  postgres_data:
+    name: resultportal_postgres_data
+  staticfiles:
+    name: resultportal_staticfiles
+  mediafiles:
+    name: resultportal_mediafiles
+
+networks:
+  resultportal_network:
+    name: resultportal_network
+    driver: bridge
