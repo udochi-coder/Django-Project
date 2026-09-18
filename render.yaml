@@ -1,0 +1,26 @@
+services:
+  - type: web
+    name: resultportal-api
+    runtime: docker
+    dockerfilePath: ./Dockerfile
+    healthCheckPath: /swagger/
+    envVars:
+      - key: SECRET_KEY
+        generateValue: true
+      - key: DEBUG
+        value: "False"
+      - key: ALLOWED_HOSTS
+        value: "resultportal-api.onrender.com,northstar-university.vercel.app,localhost,127.0.0.1"
+      - key: CORS_ALLOWED_ORIGINS
+        value: "https://northstar-university.vercel.app,http://localhost:5173,http://127.0.0.1:5173"
+      - key: CSRF_TRUSTED_ORIGINS
+        value: "https://northstar-university.vercel.app,https://resultportal-api.onrender.com"
+      - key: DATABASE_URL
+        fromDatabase:
+          name: resultportal-db
+          property: connectionString
+
+databases:
+  - name: resultportal-db
+    databaseName: resultportal
+    user: resultportal

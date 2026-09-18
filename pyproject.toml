@@ -1,0 +1,22 @@
+[project]
+name = "resultportal"
+version = "0.1.0"
+description = "Result Portal"
+readme = "README.md"
+requires-python = ">=3.12"
+
+dependencies = [
+    "django>=6.0.5",
+    "django-cors-headers>=4.7.0",
+    "djangorestframework>=3.17.1",
+    "djangorestframework-simplejwt>=5.5.1",
+    "djangorestframework-stubs>=3.17.0",
+    "drf-nested-routers>=0.95.0",
+    "drf-yasg>=1.21.15",
+    "dj-database-url>=2.1.0",
+    "gunicorn>=23.0.0",
+    "loguru>=0.7.3",
+    "psycopg2-binary>=2.9.12",
+    "whitenoise>=6.9.0",
+    "dj-config-url>=0.1.1",
+]
