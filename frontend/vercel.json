@@ -1,5 +1,5 @@
 {
   "rewrites": [
-    { "source": "/(.*)", "destination": "/django" }
+    { "source": "/(.*)", "destination": "/index.html" }
   ]
 }
