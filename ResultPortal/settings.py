@@ -50,11 +50,10 @@ ALLOWED_HOSTS = [
     host.strip()
     for host in os.getenv(
         'ALLOWED_HOSTS',
-        'localhost,127.0.0.1,0.0.0.0,[::1],web,northstar-university.vercel.app,https://django-project-hc1a.onrender.com'
+        'localhost,127.0.0.1,0.0.0.0,[::1],.vercel.app,django-project-hc1a.onrender.com'
     ).split(',')
     if host.strip()
 ]
-
 # Application definition
 
 INSTALLED_APPS = [
